@@ -88,13 +88,19 @@ WHERE g.gap_seconds > 0
 ORDER BY g.gap_seconds DESC;
 
 -- 4. OVERALL STATISTICS - Summary of the entire run
+WITH time_gaps AS (
+    SELECT 
+        wall_clock_time,
+        EXTRACT(EPOCH FROM wall_clock_time - LAG(wall_clock_time) OVER (ORDER BY wall_clock_time)) as gap_seconds
+    FROM execution_data
+)
 SELECT 
     COUNT(*) as total_images,
     MIN(wall_clock_time) as start_time,
     MAX(wall_clock_time) as end_time,
     ROUND(EXTRACT(EPOCH FROM (MAX(wall_clock_time) - MIN(wall_clock_time))) / 3600.0, 2) as total_hours,
     ROUND(COUNT(*) / (EXTRACT(EPOCH FROM (MAX(wall_clock_time) - MIN(wall_clock_time))) / 3600.0), 2) as avg_images_per_hour,
-    ROUND(AVG(EXTRACT(EPOCH FROM wall_clock_time - LAG(wall_clock_time) OVER (ORDER BY wall_clock_time))), 2) as avg_seconds_between_images
+    ROUND((SELECT AVG(gap_seconds) FROM time_gaps WHERE gap_seconds IS NOT NULL), 2) as avg_seconds_between_images
 FROM execution_data;
 
 -- 5. HOURLY THROUGHPUT - How many images processed each hour

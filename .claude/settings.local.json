@@ -6,7 +6,8 @@
       "Bash(tar:*)",
       "Bash(uv add:*)",
       "Bash(uv run:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "WebFetch(domain:docs.kanaries.net)"
     ],
     "deny": []
   }

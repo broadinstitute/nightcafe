@@ -15,8 +15,12 @@ fi
 
 # Extract data if not already done
 mkdir -p extracted_data
-echo "Extracting CSV files..."
-tar -xzf data/image_csv_files.tar.gz -C extracted_data
+if [ -z "$(ls -A extracted_data 2>/dev/null)" ]; then
+    echo "Extracting CSV files..."
+    tar -xzf data/image_csv_files.tar.gz -C extracted_data
+else
+    echo "CSV files already extracted, skipping extraction..."
+fi
 
 # Create DuckDB database
 echo "Creating DuckDB database..."
@@ -73,5 +77,16 @@ SELECT
 FROM execution_data;
 "
 
+# Create directory for CSV exports
+mkdir -p exported_tables
+
+# Export tables to CSV files (excluding raw_execution_data)
+echo "Exporting tables to CSV files..."
+uv run duckdb execution_times.duckdb -c "
+COPY timestamps TO 'exported_tables/timestamps.csv' (HEADER, DELIMITER ',');
+COPY execution_data TO 'exported_tables/execution_data.csv' (HEADER, DELIMITER ',');
+"
+
 echo "Database created: execution_times.duckdb"
 echo "Main tables: execution_data (full data with all columns)"
+echo "CSV exports: exported_tables/timestamps.csv, exported_tables/execution_data.csv"
