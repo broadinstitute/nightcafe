@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(tar:*)",
+      "Bash(uv add:*)",
+      "Bash(uv run:*)",
+      "Bash(chmod:*)"
+    ],
+    "deny": []
+  }
+}
