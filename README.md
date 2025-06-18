@@ -61,6 +61,18 @@ Creates a DuckDB database (`execution_times.duckdb`) that combines:
 - Wall clock timestamps from the processing server
 - Parsed metadata (batch, plate, well, site)
 
+### Running Queries
+
+Run the example queries:
+```bash
+uv run duckdb execution_times.duckdb < query_examples.sql
+```
+
+Or run queries interactively:
+```bash
+uv run duckdb execution_times.duckdb
+```
+
 ### Example Queries
 ```sql
 -- Processing timeline
