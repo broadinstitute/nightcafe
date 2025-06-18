@@ -56,10 +56,11 @@ find -name "Image.csv" -exec stat -c "%n,%W,%Y,%Z" {} \; > ~/nightcafe/file_time
 ./create_execution_db.sh
 ```
 
-Creates a DuckDB database (`execution_times.duckdb`) that combines:
-- Execution time data from all ExecutionTime_* columns
+Creates a DuckDB database (`execution_times.duckdb`) containing:
+- All raw data from Image.csv files (including all ExecutionTime_* columns)
 - Wall clock timestamps from the processing server
 - Parsed metadata (batch, plate, well, site)
+- Single table structure for flexible analysis
 
 ### Running Queries
 
@@ -73,20 +74,9 @@ Or run queries interactively:
 uv run duckdb execution_times.duckdb
 ```
 
-### Example Queries
-```sql
--- Processing timeline
-SELECT site, wall_clock_time, total_execution_time, seconds_since_previous
-FROM execution_summary
-ORDER BY processing_order;
-
--- Module performance comparison
-SELECT 'Align' as module, AVG(ExecutionTime_04Align) as avg_seconds
-FROM execution_data;
-
--- Throughput analysis
-SELECT COUNT(*) / (EXTRACT(EPOCH FROM (MAX(wall_clock_time) - MIN(wall_clock_time))) / 3600.0) as sites_per_hour
-FROM execution_summary;
-```
-
-See `query_examples.sql` for more analysis queries.
+See `query_examples.sql` for various analysis queries including:
+- Overall processing statistics and throughput
+- Module performance comparisons
+- Processing timeline and gap analysis
+- Dynamic column discovery
+- Hourly and daily summaries
