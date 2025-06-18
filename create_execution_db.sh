@@ -21,14 +21,14 @@ tar -xzf data/image_csv_files.tar.gz -C extracted_data
 # Create DuckDB database
 echo "Creating DuckDB database..."
 uv run duckdb execution_times.duckdb -c "
--- Load all CSV data
+-- 1. raw_execution_data: Temporary staging of all Image.csv files (1 row per site)
 DROP TABLE IF EXISTS raw_execution_data;
 CREATE TABLE raw_execution_data AS 
 SELECT * 
 FROM read_csv_auto('extracted_data/*/Image.csv', filename=true)
 WHERE ImageNumber = 1;
 
--- Load timestamp data
+-- 2. timestamps: Maps when each site was processed on the server
 DROP TABLE IF EXISTS timestamps;
 CREATE TABLE timestamps AS
 SELECT 
@@ -42,7 +42,7 @@ FROM read_csv_auto('data/file_timestamps_raw.csv',
     header=false
 );
 
--- Create main analysis table with parsed metadata and timestamps
+-- 3. execution_data: Main analysis table combining metadata, timing, and all execution metrics
 DROP TABLE IF EXISTS execution_data;
 CREATE TABLE execution_data AS 
 SELECT 
@@ -54,12 +54,12 @@ SELECT
     CAST(SPLIT_PART(SPLIT_PART(raw.filename, '/', -2), '-', 6) AS INTEGER) as site,
     SPLIT_PART(raw.filename, '/', -2) as dirname,
     
-    -- Timestamp data
+    -- Server processing timestamps
     ts.wall_clock_time,
     ts.mod_timestamp as wall_clock_timestamp,
     
-    -- Include all columns from raw data
-    raw.*
+    -- Only ExecutionTime columns for performance analysis
+    COLUMNS('ExecutionTime_.*')
     
 FROM raw_execution_data raw
 LEFT JOIN timestamps ts ON SPLIT_PART(raw.filename, '/', -2) = ts.dirname;
