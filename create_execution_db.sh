@@ -87,6 +87,13 @@ COPY timestamps TO 'exported_tables/timestamps.csv' (HEADER, DELIMITER ',');
 COPY execution_data TO 'exported_tables/execution_data.csv' (HEADER, DELIMITER ',');
 "
 
+# Export to Parquet for web access
+echo "Exporting to Parquet format..."
+uv run duckdb data/execution_times.duckdb -c "
+COPY execution_data TO 'data/execution_data.parquet' (FORMAT PARQUET);
+"
+
 echo "Database created: data/execution_times.duckdb"
 echo "Main tables: execution_data (full data with all columns)"
 echo "CSV exports: exported_tables/timestamps.csv, exported_tables/execution_data.csv"
+echo "Parquet export: data/execution_data.parquet (can be read directly from GitHub)"

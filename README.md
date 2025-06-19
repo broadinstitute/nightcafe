@@ -86,3 +86,19 @@ See `query_examples.sql` for various analysis queries including:
 For interactive data exploration:
 - **Marimo notebook**: Run `uv run marimo edit explore_execution_times.py` for reactive visualizations with Altair
 - **Create new notebooks**: Use `uv run marimo new` to create additional reactive notebooks
+
+### Direct Web Access
+
+You can read the data directly from GitHub without downloading:
+
+```python
+import duckdb
+
+conn = duckdb.connect()
+conn.execute("INSTALL httpfs; LOAD httpfs;")
+
+# Read directly from GitHub
+df = conn.execute("""
+    SELECT * FROM 'https://raw.githubusercontent.com/broadinstitute/nightcafe/main/data/execution_data.parquet'
+""").df()
+```
