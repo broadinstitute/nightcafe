@@ -39,7 +39,7 @@ def _(duckdb):
         SELECT
             *,
             {sum_expr} as total_execution_time,
-            EXTRACT(EPOCH FROM (wall_clock_time - MIN(wall_clock_time) OVER ())) / 60.0 as minutes_from_start
+            wall_clock_timestamp - MIN(wall_clock_timestamp) OVER () as seconds_from_start
         FROM execution_data
         ORDER BY wall_clock_time
     """).df()
@@ -58,7 +58,7 @@ def _(df, mo):
 
     ## Dataset Overview
     - **Total Images**: {len(df):,}
-    - **Processing Duration**: {df["minutes_from_start"].max():.1f} minutes
+    - **Processing Duration**: {df["seconds_from_start"].max():.1f} seconds
     - **Average Execution Time**: {df["total_execution_time"].mean():.1f} seconds
     - **Median Execution Time**: {df["total_execution_time"].median():.1f} seconds
     - **Min/Max**: {df["total_execution_time"].min():.1f} / {df["total_execution_time"].max():.1f} seconds
@@ -80,7 +80,7 @@ def _(df, mo):
             "well",
             "site",
             "total_execution_time",
-            "minutes_from_start",
+            "seconds_from_start",
         ]
     ]
 
@@ -105,7 +105,7 @@ def _(alt, df, mo):
         alt.Chart(df)
         .mark_circle(size=50, opacity=0.5)
         .encode(
-            x=alt.X("minutes_from_start:Q", title="Minutes from Start"),
+            x=alt.X("seconds_from_start:Q", title="Seconds from Start"),
             y=alt.Y(
                 "total_execution_time:Q", title="Total Execution Time (seconds)"
             ),
@@ -121,7 +121,7 @@ def _(alt, df, mo):
                 "well",
                 "site",
                 "total_execution_time",
-                "minutes_from_start",
+                "seconds_from_start",
             ],
         )
         .add_params(timeline_brush)
@@ -136,6 +136,81 @@ def _(alt, df, mo):
 @app.cell
 def _(timeline):
     timeline
+    return
+
+
+@app.cell
+def _(df):
+    # Define the line from (0, 400) to (2400, 2800)
+    # Line equation: y = mx + b where m = (2800-400)/(2400-0) = 1, b = 400
+    # So the line is: y = x + 400
+
+    # Create subset of points above the line
+    outliers_df = df[
+        df["total_execution_time"] > df["seconds_from_start"] + 400
+    ].copy()
+
+    print(f"Found {len(outliers_df)} outlier points above the line y = x + 400")
+    print(f"That's {len(outliers_df) / len(df) * 100:.1f}% of all points")
+
+    return (outliers_df,)
+
+
+@app.cell
+def _(outliers_df):
+    # Check if total_execution_time = seconds_from_start + constant for outliers
+    outliers_df["time_difference"] = (
+        outliers_df["total_execution_time"] - outliers_df["seconds_from_start"]
+    )
+
+    print(
+        "Analysis of relationship: total_execution_time = seconds_from_start + constant"
+    )
+    print(f"Mean difference: {outliers_df['time_difference'].mean():.2f}")
+    print(f"Std deviation: {outliers_df['time_difference'].std():.2f}")
+    print(f"Min difference: {outliers_df['time_difference'].min():.2f}")
+    print(f"Max difference: {outliers_df['time_difference'].max():.2f}")
+    print(
+        f"Range: {outliers_df['time_difference'].max() - outliers_df['time_difference'].min():.2f}"
+    )
+
+    # Check how many are within a small range
+    const_threshold = 50  # seconds
+    mean_diff = outliers_df["time_difference"].mean()
+    within_threshold = outliers_df[
+        (outliers_df["time_difference"] > mean_diff - const_threshold)
+        & (outliers_df["time_difference"] < mean_diff + const_threshold)
+    ]
+
+    print(
+        f"\n{len(within_threshold)} out of {len(outliers_df)} outliers ({len(within_threshold) / len(outliers_df) * 100:.1f}%) have difference within ±{const_threshold}s of mean"
+    )
+
+    return (within_threshold,)
+
+
+@app.cell
+def _(within_threshold):
+    within_threshold
+    return
+
+
+@app.cell
+def _(alt, within_threshold):
+    timeline2 = (
+        alt.Chart(within_threshold)
+        .mark_circle(size=50, opacity=0.5)
+        .encode(
+            x=alt.X("seconds_from_start:Q"), y=alt.Y("total_execution_time:Q")
+        )
+    )
+    timeline2
+    return
+
+
+@app.cell
+def _(within_threshold):
+    within_threshold
     return
 
 
