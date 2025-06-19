@@ -22,7 +22,7 @@ StarryNight generates comprehensive output data from CellProfiler image processi
 Archive of 1,025 Image.csv files from CellProfiler analysis containing timing data and extensive image analysis metrics.
 
 Each CSV file contains:
-- **ExecutionTime_* columns**: Processing time for individual CellProfiler modules
+- **ExecutionTime_\* columns**: Processing time for individual CellProfiler modules
 - **Image quality metrics**: Focus scores, intensity measurements, correlation data
 - **Processing metadata**: Batch, plate, well, site information
 - **Algorithm results**: Object counts, measurements, and derived metrics
@@ -62,6 +62,8 @@ Creates a DuckDB database (`execution_times.duckdb`) containing:
 - Parsed metadata (batch, plate, well, site)
 - Single table structure for flexible analysis
 
+The script also exports key tables to CSV files in `exported_tables/` for easy sharing and backup.
+
 ### Running Queries
 
 Run the example queries:
@@ -80,3 +82,9 @@ See `query_examples.sql` for various analysis queries including:
 - Processing timeline and gap analysis
 - Dynamic column discovery
 - Hourly and daily summaries
+
+### Interactive Analysis
+
+For interactive data exploration:
+- **Marimo notebook**: Run `uv run marimo edit explore_execution_times.py` for reactive visualizations with Altair
+- **Create new notebooks**: Use `uv run marimo new` to create additional reactive notebooks
