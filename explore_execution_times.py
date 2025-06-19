@@ -7,20 +7,18 @@ app = marimo.App(width="medium")
 @app.cell
 def _():
     import altair as alt
-    import duckdb
     import marimo as mo
 
     # Enable Altair data transformers for large datasets
     alt.data_transformers.enable("default", max_rows=None)
-    return alt, duckdb, mo
+    return alt, mo
 
 
 @app.cell
-def _(duckdb):
+def _():
     from pathlib import Path
 
-    # Create in-memory DuckDB connection
-    conn = duckdb.connect()
+    import pandas as pd
 
     # Check if local file exists, otherwise use GitHub URL
     local_path = "data/execution_data.parquet"
@@ -30,36 +28,28 @@ def _(duckdb):
         data_source = local_path
         print(f"Loading data from local file: {local_path}")
     else:
-        # Install and load httpfs extension for web access
-        conn.execute("INSTALL httpfs; LOAD httpfs;")
         data_source = github_url
         print(f"Loading data from GitHub: {github_url}")
 
-    # Load data from Parquet file
-    df = conn.execute(f"""
-        SELECT * FROM '{data_source}'
-    """).df()
+    # Load data from Parquet file using pandas
+    df = pd.read_parquet(data_source)
 
     # Get all ExecutionTime columns
     exec_cols = [col for col in df.columns if col.startswith("ExecutionTime_")]
 
-    # Build sum expression
-    sum_expr = " + ".join([f'COALESCE("{col}", 0)' for col in exec_cols])
-
     # Add calculated fields
-    df = conn.execute(f"""
-        SELECT
-            *,
-            {sum_expr} as total_execution_time,
-            wall_clock_timestamp - MIN(wall_clock_timestamp) OVER () as seconds_from_start
-        FROM df
-        ORDER BY wall_clock_time
-    """).df()
+    df["total_execution_time"] = df[exec_cols].fillna(0).sum(axis=1)
+    df["seconds_from_start"] = (
+        df["wall_clock_timestamp"] - df["wall_clock_timestamp"].min()
+    )
+
+    # Sort by wall_clock_time
+    df = df.sort_values("wall_clock_time")
 
     print(
         f"Loaded {len(df)} images with {len(exec_cols)} execution time columns"
     )
-    return (df,)
+    return df, exec_cols, pd
 
 
 @app.cell
