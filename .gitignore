@@ -197,5 +197,6 @@ cython_debug/
 extracted_data/
 exported_tables/
 execution_plots/
+*.duckdb
 *.duckdb-journal
 *.duckdb-wal
