@@ -17,12 +17,27 @@ def _():
 
 @app.cell
 def _(duckdb):
+    from pathlib import Path
+
     # Create in-memory DuckDB connection
     conn = duckdb.connect()
 
+    # Check if local file exists, otherwise use GitHub URL
+    local_path = "data/execution_data.parquet"
+    github_url = "https://raw.githubusercontent.com/broadinstitute/nightcafe/refs/heads/main/data/execution_data.parquet"
+
+    if Path(local_path).exists():
+        data_source = local_path
+        print(f"Loading data from local file: {local_path}")
+    else:
+        # Install and load httpfs extension for web access
+        conn.execute("INSTALL httpfs; LOAD httpfs;")
+        data_source = github_url
+        print(f"Loading data from GitHub: {github_url}")
+
     # Load data from Parquet file
-    df = conn.execute("""
-        SELECT * FROM 'data/execution_data.parquet'
+    df = conn.execute(f"""
+        SELECT * FROM '{data_source}'
     """).df()
 
     # Get all ExecutionTime columns
