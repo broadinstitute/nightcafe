@@ -62,13 +62,6 @@ SELECT
     ts.wall_clock_time,
     ts.mod_timestamp as wall_clock_timestamp,
 
-    -- Calculate elapsed time in seconds from start of run
-    EXTRACT(EPOCH FROM (ts.wall_clock_time - MIN(ts.wall_clock_time) OVER ())) as seconds_from_start,
-
-    -- Calculate total execution time by summing all ExecutionTime columns
-    (SELECT SUM(CAST(col AS DOUBLE))
-     FROM (SELECT UNNEST(LIST_VALUE(COLUMNS('ExecutionTime_.*'))) as col)) as total_execution_time,
-
     -- Only ExecutionTime columns for performance analysis
     COLUMNS('ExecutionTime_.*')
 
