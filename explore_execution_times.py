@@ -9,11 +9,10 @@ def _():
     import altair as alt
     import duckdb
     import marimo as mo
-    import pandas as pd
 
     # Enable Altair data transformers for large datasets
     alt.data_transformers.enable("default", max_rows=None)
-    return alt, duckdb, mo, pd
+    return alt, duckdb, mo
 
 
 @app.cell
@@ -48,7 +47,7 @@ def _(duckdb):
     print(
         f"Loaded {len(df)} images with {len(exec_cols)} execution time columns"
     )
-    return df, exec_cols
+    return (df,)
 
 
 @app.cell
@@ -84,6 +83,12 @@ def _(df, mo):
             "minutes_from_start",
         ]
     ]
+
+    return (table_df,)
+
+
+@app.cell
+def _(mo, table_df):
     mo.ui.table(table_df, selection=None)
     return
 
@@ -93,7 +98,7 @@ def _(alt, df, mo):
     # Timeline visualization
     mo.md("## Processing Timeline")
 
-    # Create interactive scatter plot
+    # Create interactive scatter plot with selection
     timeline_brush = alt.selection_interval()
 
     timeline = (
@@ -104,7 +109,11 @@ def _(alt, df, mo):
             y=alt.Y(
                 "total_execution_time:Q", title="Total Execution Time (seconds)"
             ),
-            color=alt.Color("batch:N", title="Batch"),
+            color=alt.condition(
+                timeline_brush,
+                alt.Color("batch:N", title="Batch"),
+                alt.value("lightgray"),
+            ),
             tooltip=[
                 "dirname",
                 "batch",
@@ -112,6 +121,7 @@ def _(alt, df, mo):
                 "well",
                 "site",
                 "total_execution_time",
+                "minutes_from_start",
             ],
         )
         .add_params(timeline_brush)
@@ -126,57 +136,6 @@ def _(alt, df, mo):
 @app.cell
 def _(timeline):
     timeline
-    return
-
-
-@app.cell
-def _(alt, df, exec_cols, mo, pd):
-    # Top time-consuming modules
-    mo.md("## Module Performance Analysis")
-
-    # Calculate mean time for each module
-    module_means = {}
-    for col in exec_cols:
-        # Remove ExecutionTime_ prefix and get module name
-        module_name = col.replace("ExecutionTime_", "")
-        # Remove leading numbers if present
-        if module_name and module_name[0].isdigit():
-            parts = module_name.split("_", 1)
-            module_name = parts[1] if len(parts) > 1 else module_name
-        module_means[module_name] = df[col].mean()
-
-    # Create dataframe for visualization
-    modules_df = (
-        pd.DataFrame(
-            list(module_means.items()), columns=["Module", "Average_Time"]
-        )
-        .sort_values("Average_Time", ascending=False)
-        .head(15)
-    )
-
-    # Horizontal bar chart
-    modules_chart = (
-        alt.Chart(modules_df)
-        .mark_bar()
-        .encode(
-            x=alt.X("Average_Time:Q", title="Average Execution Time (seconds)"),
-            y=alt.Y("Module:N", sort="-x", title="Module"),
-            color=alt.Color(
-                "Average_Time:Q", scale=alt.Scale(scheme="viridis")
-            ),
-            tooltip=["Module", "Average_Time"],
-        )
-        .properties(
-            width=600, height=400, title="Top 15 Most Time-Consuming Modules"
-        )
-    )
-
-    return (modules_chart,)
-
-
-@app.cell
-def _(modules_chart):
-    modules_chart
     return
 
 

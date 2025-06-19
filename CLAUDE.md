@@ -27,7 +27,7 @@ tar -xzf data/image_csv_files.tar.gz -C extracted_data
 
 - **Language**: Python 3.11+
 - **Focus**: Data analysis and performance optimization
-- **Core Libraries**: 
+- **Core Libraries**:
   - DuckDB (v1.3.1+) - Primary database for performance analysis
   - Pandas (v2.3.0+) - Data manipulation
   - Matplotlib/Seaborn - Visualization
@@ -74,6 +74,7 @@ This workspace specifically focuses on analyzing the output and performance char
 
 - Always use MCP to access github repos
 - **MCP Puppeteer URLs**: Use `http://host.docker.internal:NNNN` instead of `http://localhost:NNNN` (MCP Puppeteer runs in Docker and can't reach host localhost)
+- Always use readonly mode for duckdb db access unless write is necessary
 
 ### Marimo + Puppeteer MCP Integration
 
@@ -83,9 +84,16 @@ When the user runs a Marimo notebook and wants to view it with Puppeteer:
 2. **Marimo outputs URL**: e.g., `http://localhost:2718?access_token=z-j5KRB_XBpmB7yBn-KZdQ`
 3. **Convert for Puppeteer**: Replace `localhost` with `host.docker.internal`
 4. **Navigate**: Use `puppeteer_navigate` with the converted URL
-5. **Screenshot**: Use `puppeteer_screenshot` to capture the output (width: 1400, height: 2500+ recommended)
+5. **Handle session conflicts**: If you see "Notebook already connected" message:
+   - Use `puppeteer_evaluate` to click "Take over session" button:
+     ```javascript
+     const buttons = Array.from(document.querySelectorAll('button'));
+     const takeOverButton = buttons.find(btn => btn.textContent.includes('Take over session'));
+     if (takeOverButton) takeOverButton.click();
+     ```
+6. **Screenshot**: Use `puppeteer_screenshot` to capture the output (width: 1400, height: 2500-3000 recommended)
 
 **Notes**:
 - Marimo provides the access token in the URL - always include it
-- "Notebook already connected" messages indicate session conflicts but screenshots still work
-- No need to click buttons or reload - direct navigation and screenshot is sufficient
+- Session conflicts are common when notebook is already open elsewhere
+- After clicking "Take over session", wait a moment for the notebook to load

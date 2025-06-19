@@ -12,7 +12,8 @@
       "Bash(timeout 10 uv run marimo run:*)",
       "mcp__puppeteer__puppeteer_navigate",
       "mcp__puppeteer__puppeteer_screenshot",
-      "mcp__puppeteer__puppeteer_click"
+      "mcp__puppeteer__puppeteer_click",
+      "Bash(git add:*)"
     ],
     "deny": []
   }

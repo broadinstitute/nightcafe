@@ -27,29 +27,29 @@ echo "Creating DuckDB database..."
 uv run duckdb execution_times.duckdb -c "
 -- 1. raw_execution_data: Temporary staging of all Image.csv files (1 row per site)
 DROP TABLE IF EXISTS raw_execution_data;
-CREATE TABLE raw_execution_data AS 
-SELECT * 
+CREATE TABLE raw_execution_data AS
+SELECT *
 FROM read_csv_auto('extracted_data/*/Image.csv', filename=true)
 WHERE ImageNumber = 1;
 
 -- 2. timestamps: Maps when each site was processed on the server
 DROP TABLE IF EXISTS timestamps;
 CREATE TABLE timestamps AS
-SELECT 
+SELECT
     REGEXP_EXTRACT(filepath, '([^/]+)/Image\.csv$', 1) as dirname,
     CAST(birth_time AS BIGINT) as birth_timestamp,
     CAST(mod_time AS BIGINT) as mod_timestamp,
     CAST(change_time AS BIGINT) as change_timestamp,
     to_timestamp(CAST(mod_time AS BIGINT)) as wall_clock_time
-FROM read_csv_auto('data/file_timestamps_raw.csv', 
+FROM read_csv_auto('data/file_timestamps_raw.csv',
     columns={'filepath': 'VARCHAR', 'birth_time': 'VARCHAR', 'mod_time': 'VARCHAR', 'change_time': 'VARCHAR'},
     header=false
 );
 
 -- 3. execution_data: Main analysis table combining metadata, timing, and all execution metrics
 DROP TABLE IF EXISTS execution_data;
-CREATE TABLE execution_data AS 
-SELECT 
+CREATE TABLE execution_data AS
+SELECT
     -- Parse metadata from directory path
     SPLIT_PART(SPLIT_PART(raw.filename, '/', -2), '-', 1) as date,
     SPLIT_PART(SPLIT_PART(raw.filename, '/', -2), '-', 2) || '-' || SPLIT_PART(SPLIT_PART(raw.filename, '/', -2), '-', 3) as batch,
@@ -57,19 +57,26 @@ SELECT
     SPLIT_PART(SPLIT_PART(raw.filename, '/', -2), '-', 5) as well,
     CAST(SPLIT_PART(SPLIT_PART(raw.filename, '/', -2), '-', 6) AS INTEGER) as site,
     SPLIT_PART(raw.filename, '/', -2) as dirname,
-    
+
     -- Server processing timestamps
     ts.wall_clock_time,
     ts.mod_timestamp as wall_clock_timestamp,
-    
+
+    -- Calculate elapsed time in seconds from start of run
+    EXTRACT(EPOCH FROM (ts.wall_clock_time - MIN(ts.wall_clock_time) OVER ())) as seconds_from_start,
+
+    -- Calculate total execution time by summing all ExecutionTime columns
+    (SELECT SUM(CAST(col AS DOUBLE))
+     FROM (SELECT UNNEST(LIST_VALUE(COLUMNS('ExecutionTime_.*'))) as col)) as total_execution_time,
+
     -- Only ExecutionTime columns for performance analysis
     COLUMNS('ExecutionTime_.*')
-    
+
 FROM raw_execution_data raw
 LEFT JOIN timestamps ts ON SPLIT_PART(raw.filename, '/', -2) = ts.dirname;
 
 -- Show summary
-SELECT 
+SELECT
     COUNT(*) as total_records,
     MIN(wall_clock_time) as first_processed,
     MAX(wall_clock_time) as last_processed,
