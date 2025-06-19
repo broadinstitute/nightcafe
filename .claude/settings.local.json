@@ -9,7 +9,10 @@
       "Bash(chmod:*)",
       "WebFetch(domain:docs.kanaries.net)",
       "WebFetch(domain:docs.marimo.io)",
-      "Bash(timeout 10 uv run marimo run:*)"
+      "Bash(timeout 10 uv run marimo run:*)",
+      "mcp__puppeteer__puppeteer_navigate",
+      "mcp__puppeteer__puppeteer_screenshot",
+      "mcp__puppeteer__puppeteer_click"
     ],
     "deny": []
   }

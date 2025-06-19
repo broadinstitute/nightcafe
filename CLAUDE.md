@@ -69,3 +69,23 @@ tar -xzf data/image_csv_files.tar.gz -C extracted_data
 StarryNight is a toolkit for optical pooled screening image data processing. Full documentation: https://broadinstitute.github.io/starrynight/
 
 This workspace specifically focuses on analyzing the output and performance characteristics of StarryNight's CellProfiler integration.
+
+## Memories
+
+- Always use MCP to access github repos
+- **MCP Puppeteer URLs**: Use `http://host.docker.internal:NNNN` instead of `http://localhost:NNNN` (MCP Puppeteer runs in Docker and can't reach host localhost)
+
+### Marimo + Puppeteer MCP Integration
+
+When the user runs a Marimo notebook and wants to view it with Puppeteer:
+
+1. **User runs Marimo**: `uv run marimo edit/run <notebook>.py`
+2. **Marimo outputs URL**: e.g., `http://localhost:2718?access_token=z-j5KRB_XBpmB7yBn-KZdQ`
+3. **Convert for Puppeteer**: Replace `localhost` with `host.docker.internal`
+4. **Navigate**: Use `puppeteer_navigate` with the converted URL
+5. **Screenshot**: Use `puppeteer_screenshot` to capture the output (width: 1400, height: 2500+ recommended)
+
+**Notes**:
+- Marimo provides the access token in the URL - always include it
+- "Notebook already connected" messages indicate session conflicts but screenshots still work
+- No need to click buttons or reload - direct navigation and screenshot is sufficient
