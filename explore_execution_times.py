@@ -17,30 +17,27 @@ def _():
 
 @app.cell
 def _(duckdb):
-    # Connect to DuckDB and load data (read-only to avoid lock conflicts)
-    conn = duckdb.connect("data/execution_times.duckdb", read_only=True)
+    # Create in-memory DuckDB connection
+    conn = duckdb.connect()
+
+    # Load data from Parquet file
+    df = conn.execute("""
+        SELECT * FROM 'data/execution_data.parquet'
+    """).df()
 
     # Get all ExecutionTime columns
-    exec_cols_query = conn.execute("""
-        SELECT column_name
-        FROM information_schema.columns
-        WHERE table_name = 'execution_data'
-        AND column_name LIKE 'ExecutionTime_%'
-        ORDER BY column_name
-    """).fetchall()
-
-    exec_cols = [col[0] for col in exec_cols_query]
+    exec_cols = [col for col in df.columns if col.startswith("ExecutionTime_")]
 
     # Build sum expression
     sum_expr = " + ".join([f'COALESCE("{col}", 0)' for col in exec_cols])
 
-    # Load data with calculated fields
+    # Add calculated fields
     df = conn.execute(f"""
         SELECT
             *,
             {sum_expr} as total_execution_time,
             wall_clock_timestamp - MIN(wall_clock_timestamp) OVER () as seconds_from_start
-        FROM execution_data
+        FROM df
         ORDER BY wall_clock_time
     """).df()
 
