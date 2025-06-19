@@ -15,3 +15,18 @@ dependencies = [
     "pygwalker>=0.4.9.15",
     "seaborn>=0.13.2",
 ]
+
+[tool.ruff]
+line-length = 80
+
+[tool.ruff.lint]
+select = ["ANN", "C90", "D", "E", "F", "I", "N", "NPY", "PTH", "TID", "UP", "W"]
+exclude = ["vendor", "src/starrynight/modules/schema.py"]
+ignore = ["ANN001", "ANN202", "E501", "D203", "D213", "D100"]
+#ignore = ["D203", "D213", "D103", "D102", "E501", "ANN101", "ANN001", "ANN201", "F401", "D100", "D101", "D419", "C901"]  # Avoid conflicting rules; Others: skipping for now
+
+[tool.basedpyright]
+typeCheckingMode = "basic"
+
+[tool.marimo.runtime]
+watcher_on_save = "autorun"

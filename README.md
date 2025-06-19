@@ -13,8 +13,6 @@ StarryNight generates comprehensive output data from CellProfiler image processi
 - **Analyze execution times and performance characteristics** of image processing modules
 - **Identify performance bottlenecks** in processing pipelines through ExecutionTime_* metrics
 - **Explore timing patterns** across different processing stages, samples, and experimental conditions
-- **Optimize processing workflows** based on data-driven insights from real execution data
-- **Investigate processing results and quality metrics** from comprehensive image analysis
 
 ## Data
 
@@ -62,7 +60,7 @@ Creates a DuckDB database (`execution_times.duckdb`) containing:
 - Parsed metadata (batch, plate, well, site)
 - Single table structure for flexible analysis
 
-The script also exports key tables to CSV files in `exported_tables/` for easy sharing and backup.
+The script also exports key tables to CSV files in `exported_tables/`.
 
 ### Running Queries
 
