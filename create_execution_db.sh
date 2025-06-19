@@ -24,7 +24,7 @@ fi
 
 # Create DuckDB database
 echo "Creating DuckDB database..."
-uv run duckdb execution_times.duckdb -c "
+uv run duckdb data/execution_times.duckdb -c "
 -- 1. raw_execution_data: Temporary staging of all Image.csv files (1 row per site)
 DROP TABLE IF EXISTS raw_execution_data;
 CREATE TABLE raw_execution_data AS
@@ -82,11 +82,11 @@ mkdir -p exported_tables
 
 # Export tables to CSV files (excluding raw_execution_data)
 echo "Exporting tables to CSV files..."
-uv run duckdb execution_times.duckdb -c "
+uv run duckdb data/execution_times.duckdb -c "
 COPY timestamps TO 'exported_tables/timestamps.csv' (HEADER, DELIMITER ',');
 COPY execution_data TO 'exported_tables/execution_data.csv' (HEADER, DELIMITER ',');
 "
 
-echo "Database created: execution_times.duckdb"
+echo "Database created: data/execution_times.duckdb"
 echo "Main tables: execution_data (full data with all columns)"
 echo "CSV exports: exported_tables/timestamps.csv, exported_tables/execution_data.csv"

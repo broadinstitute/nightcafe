@@ -13,7 +13,7 @@ This repository is a data analysis workspace for StarryNight image processing so
 ### Core Data
 - `data/image_csv_files.tar.gz`: Archive containing 1,025 Image.csv files from CellProfiler analysis
 - `data/file_timestamps_raw.csv`: Wall clock timestamps for server processing times
-- `execution_times.duckdb`: Processed DuckDB database ready for analysis
+- `data/execution_times.duckdb`: Processed DuckDB database ready for analysis
 - Each CSV contains ExecutionTime_* columns, image quality metrics, processing metadata, and algorithm results
 
 ### Data Extraction
@@ -40,7 +40,7 @@ tar -xzf data/image_csv_files.tar.gz -C extracted_data
 ### Current State
 - Active data analysis workspace with DuckDB-based performance analytics
 - Dependencies managed via pyproject.toml and uv package manager
-- Main database: `execution_times.duckdb` containing processed CellProfiler timing data
+- Main database: `data/execution_times.duckdb` containing processed CellProfiler timing data
 - Extracted data directory contains 1,025 CSV files with execution metrics
 - Supports both command-line analysis (DuckDB SQL) and interactive notebooks (Marimo)
 
@@ -61,8 +61,8 @@ tar -xzf data/image_csv_files.tar.gz -C extracted_data
 
 1. Extract data archive if needed: `tar -xzf data/image_csv_files.tar.gz -C extracted_data`
 2. Create/refresh database: `./create_execution_db.sh`
-3. Run example queries: `uv run duckdb execution_times.duckdb < query_examples.sql`
-4. Interactive analysis: `uv run duckdb execution_times.duckdb` or use Marimo notebooks
+3. Run example queries: `uv run duckdb data/execution_times.duckdb < query_examples.sql`
+4. Interactive analysis: `uv run duckdb data/execution_times.duckdb` or use Marimo notebooks
 
 ## StarryNight Context
 

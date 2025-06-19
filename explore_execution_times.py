@@ -18,7 +18,7 @@ def _():
 @app.cell
 def _(duckdb):
     # Connect to DuckDB and load data (read-only to avoid lock conflicts)
-    conn = duckdb.connect("execution_times.duckdb", read_only=True)
+    conn = duckdb.connect("data/execution_times.duckdb", read_only=True)
 
     # Get all ExecutionTime columns
     exec_cols_query = conn.execute("""

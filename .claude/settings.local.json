@@ -15,7 +15,9 @@
       "mcp__puppeteer__puppeteer_click",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(./create_execution_db.sh:*)"
+      "Bash(./create_execution_db.sh:*)",
+      "Bash(mv:*)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }

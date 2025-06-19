@@ -54,7 +54,7 @@ find -name "Image.csv" -exec stat -c "%n,%W,%Y,%Z" {} \; > ~/nightcafe/file_time
 ./create_execution_db.sh
 ```
 
-Creates a DuckDB database (`execution_times.duckdb`) containing:
+Creates a DuckDB database (`data/execution_times.duckdb`) containing:
 - All raw data from Image.csv files (including all ExecutionTime_* columns)
 - Wall clock timestamps from the processing server
 - Parsed metadata (batch, plate, well, site)
@@ -66,12 +66,12 @@ The script also exports key tables to CSV files in `exported_tables/`.
 
 Run the example queries:
 ```bash
-uv run duckdb execution_times.duckdb < query_examples.sql
+uv run duckdb data/execution_times.duckdb < query_examples.sql
 ```
 
 Or run queries interactively:
 ```bash
-uv run duckdb execution_times.duckdb
+uv run duckdb data/execution_times.duckdb
 ```
 
 See `query_examples.sql` for various analysis queries including:
